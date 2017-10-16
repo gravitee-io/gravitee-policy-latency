@@ -3,11 +3,15 @@
   "id" : "urn:jsonschema:io:gravitee:policy:latency:configuration:LatencyPolicyConfiguration",
   "properties" : {
     "time" : {
-      "type" : "integer"
+      "title": "Time duration",
+      "type" : "integer",
+      "default": 100
     },
     "timeUnit" : {
+      "title": "Time unit",
       "type" : "string",
-      "enum" : [ "NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS" ]
+      "default": "MILLISECONDS",
+      "enum" : [ "MILLISECONDS", "SECONDS" ]
     }
   }
 }

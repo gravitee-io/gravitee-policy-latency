@@ -15,18 +15,19 @@
  */
 package io.gravitee.policy.latency;
 
+import io.gravitee.gateway.api.ExecutionContext;
 import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
 import io.gravitee.policy.api.PolicyChain;
 import io.gravitee.policy.api.annotations.OnRequest;
 import io.gravitee.policy.latency.configuration.LatencyPolicyConfiguration;
+import io.vertx.core.Vertx;
 
 /**
  * @author Azize ELAMRANI (azize.elamrani at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class LatencyPolicy
-{
+public class LatencyPolicy {
 
     private final LatencyPolicyConfiguration latencyPolicyConfiguration;
 
@@ -35,10 +36,10 @@ public class LatencyPolicy
     }
 
     @OnRequest
-    public void onRequest(final Request request, final Response response, final PolicyChain policyChain)
-            throws InterruptedException {
-        Thread.sleep(latencyPolicyConfiguration.getTimeUnit().toMillis(latencyPolicyConfiguration.getTime()));
-
-        policyChain.doNext(request, response);
+    public void onRequest(final Request request, final Response response,
+                          final ExecutionContext executionContext, final PolicyChain policyChain) {
+        executionContext.getComponent(Vertx.class)
+                .setTimer(latencyPolicyConfiguration.getTimeUnit().toMillis(latencyPolicyConfiguration.getTime()),
+                    timerId -> policyChain.doNext(request, response));
     }
 }
