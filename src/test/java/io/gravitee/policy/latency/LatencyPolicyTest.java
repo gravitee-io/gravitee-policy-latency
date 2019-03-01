@@ -17,6 +17,8 @@ package io.gravitee.policy.latency;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import io.gravitee.el.TemplateContext;
+import io.gravitee.el.TemplateEngine;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,8 +27,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.gravitee.gateway.api.ExecutionContext;
-import io.gravitee.gateway.api.expression.TemplateContext;
-import io.gravitee.gateway.api.expression.TemplateEngine;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
 
 /**
@@ -59,6 +59,11 @@ public class LatencyPolicyTest
         @Override
         public String convert(String s) {
             return s;
+        }
+
+        @Override
+        public <T> T getValue(String expression, Class<T> clazz) {
+            return null;
         }
 
         @Override
