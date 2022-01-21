@@ -36,10 +36,17 @@ public class LatencyPolicy {
     }
 
     @OnRequest
-    public void onRequest(final Request request, final Response response,
-                          final ExecutionContext executionContext, final PolicyChain policyChain) {
-        executionContext.getComponent(Vertx.class)
-                .setTimer(latencyPolicyConfiguration.getTimeUnit().toMillis(latencyPolicyConfiguration.getTime()),
-                    timerId -> policyChain.doNext(request, response));
+    public void onRequest(
+        final Request request,
+        final Response response,
+        final ExecutionContext executionContext,
+        final PolicyChain policyChain
+    ) {
+        executionContext
+            .getComponent(Vertx.class)
+            .setTimer(
+                latencyPolicyConfiguration.getTimeUnit().toMillis(latencyPolicyConfiguration.getTime()),
+                timerId -> policyChain.doNext(request, response)
+            );
     }
 }

@@ -19,6 +19,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.gravitee.el.TemplateContext;
 import io.gravitee.el.TemplateEngine;
+import io.gravitee.gateway.api.ExecutionContext;
+import io.gravitee.gateway.api.stream.exception.TransformationException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,17 +28,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import io.gravitee.gateway.api.ExecutionContext;
-import io.gravitee.gateway.api.stream.exception.TransformationException;
-
 /**
  * @author Azize ELAMRANI (azize.elamrani at graviteesource.com)
  * @author GraviteeSource Team
  */
 @RunWith(MockitoJUnitRunner.class)
 @Ignore
-public class LatencyPolicyTest
-{
+public class LatencyPolicyTest {
 
     @Mock
     protected ExecutionContext executionContext;
@@ -47,12 +45,10 @@ public class LatencyPolicyTest
     }
 
     @Test
-    public void shouldTransformInput() throws Exception {
-    }
+    public void shouldTransformInput() throws Exception {}
 
     @Test(expected = TransformationException.class)
-    public void shouldThrowException() throws Exception {
-    }
+    public void shouldThrowException() throws Exception {}
 
     private class MockTemplateEngine implements TemplateEngine {
 

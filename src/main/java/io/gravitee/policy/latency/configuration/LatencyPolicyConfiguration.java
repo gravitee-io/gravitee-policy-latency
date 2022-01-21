@@ -15,9 +15,8 @@
  */
 package io.gravitee.policy.latency.configuration;
 
-import java.util.concurrent.TimeUnit;
-
 import io.gravitee.policy.api.PolicyConfiguration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Azize ELAMRANI (azize.elamrani at graviteesource.com)
