@@ -15,7 +15,7 @@ endif::[]
 ^|onResponse
 
 ^.^| X
-^.^| X
+^.^| 
 
 |===
 
@@ -30,12 +30,17 @@ You can configure the policy with the following options:
 |===
 |Property |Required |Description |Type| Default
 
-.^|scope
-^.^|X
-|Execution scope (`request` or `response`).
-^.^|string
-^.^|`REQUEST`
+.^|time
+^.^|
+|Time to wait (`ms`)
+^.^|integer
+^.^|`100`
 
+.^|timeUnit
+^.^|
+|Time unit ( `"MILLISECONDS"` or `"SECONDS"`) 
+^.^|string
+^.^|`"MILLISECONDS"`
 
 |===
 
