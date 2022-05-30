@@ -21,7 +21,16 @@ endif::[]
 
 == Description
 
+To update
 
+== Compatibility with APIM
+
+|===
+|Plugin version | APIM version
+
+| 1.4.x and upper              | 3.10.x and upper
+| Up to 1.3.x                  | Up to 3.9.x
+|===
 
 == Configuration
 
