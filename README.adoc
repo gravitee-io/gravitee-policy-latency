@@ -21,7 +21,12 @@ endif::[]
 
 == Description
 
-To update
+You can use the latency policy to add latency to either the request or the response. So for example, if you configure the policy on the request with a latency of 100ms, the gateway waits 100ms before routing the request to the backend service.
+
+This policy is particularly useful in two scenarios:
+
+* Testing: adding latency allows you to test client applications when APIs are slow to respond.
+* Monetization: a longer latency can be added to free plans to encourage clients to move to a better (or paid) plan.
 
 == Compatibility with APIM
 
