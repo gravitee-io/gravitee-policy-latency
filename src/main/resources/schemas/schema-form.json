@@ -5,7 +5,8 @@
     "time" : {
       "title": "Time duration",
       "type" : "integer",
-      "default": 100
+      "default": 100,
+      "minimum": 0
     },
     "timeUnit" : {
       "title": "Time unit",
