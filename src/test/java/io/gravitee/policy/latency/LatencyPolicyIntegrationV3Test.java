@@ -25,13 +25,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.gravitee.apim.gateway.tests.sdk.AbstractPolicyTest;
 import io.gravitee.apim.gateway.tests.sdk.annotations.DeployApi;
 import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
+import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayConfigurationBuilder;
 import io.gravitee.apim.gateway.tests.sdk.reporter.FakeReporter;
+import io.gravitee.definition.model.Api;
+import io.gravitee.definition.model.ExecutionMode;
 import io.gravitee.policy.latency.configuration.LatencyPolicyConfiguration;
 import io.gravitee.reporter.api.http.Metrics;
-import io.reactivex.observers.TestObserver;
-import io.vertx.reactivex.core.buffer.Buffer;
-import io.vertx.reactivex.ext.web.client.HttpResponse;
-import io.vertx.reactivex.ext.web.client.WebClient;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.junit5.Checkpoint;
+import io.vertx.junit5.VertxTestContext;
+import io.vertx.rxjava3.core.buffer.Buffer;
+import io.vertx.rxjava3.core.http.HttpClient;
+import io.vertx.rxjava3.core.http.HttpClientRequest;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,30 +48,52 @@ import org.junit.jupiter.api.Test;
  * @author GraviteeSource Team
  */
 @GatewayTest
-@DeployApi("/apis/latency.json")
-class LatencyPolicyIntegrationTest extends AbstractPolicyTest<LatencyPolicy, LatencyPolicyConfiguration> {
+@DeployApi("/apis/latency-v2.json")
+class LatencyPolicyIntegrationV3Test extends AbstractPolicyTest<LatencyPolicy, LatencyPolicyConfiguration> {
+
+    @Override
+    protected void configureGateway(GatewayConfigurationBuilder gatewayConfigurationBuilder) {
+        super.configureGateway(gatewayConfigurationBuilder);
+        gatewayConfigurationBuilder.set("api.jupiterMode.enabled", "false");
+    }
+
+    @Override
+    public void configureApi(Api api) {
+        super.configureApi(api);
+        api.setExecutionMode(ExecutionMode.V3);
+    }
 
     @Test
-    @DisplayName("Should apply latency")
-    void shouldApplyLatency(WebClient webClient) {
+    void should_apply_latency_on_request(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
+        Checkpoint fakeReporterCheckpoint = vertxTestContext.checkpoint();
         FakeReporter fakeReporter = getBean(FakeReporter.class);
         AtomicReference<Metrics> metricsRef = new AtomicReference<>();
         fakeReporter.setReportableHandler(reportable -> {
+            fakeReporterCheckpoint.flag();
             metricsRef.set((Metrics) reportable);
         });
 
         wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
 
-        final TestObserver<HttpResponse<Buffer>> obs = webClient.get("/test").rxSend().test();
-        awaitTerminalEvent(obs);
-        obs
-            .assertComplete()
-            .assertValue(response -> {
+        Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test")
+            .flatMap(HttpClientRequest::rxSend)
+            .flatMap(response -> {
                 assertThat(response.statusCode()).isEqualTo(200);
-                assertThat(response.bodyAsString()).isEqualTo("I'm the backend");
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver
+            .assertComplete()
+            .assertValue(body -> {
+                responseCheckpoint.flag();
+                assertThat(body).hasToString("I'm the backend");
                 return true;
             });
 
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
         wiremock.verify(exactly(1), getRequestedFor(urlPathEqualTo("/endpoint")));
         assertThat(metricsRef.get().getProxyResponseTimeMs()).isGreaterThan(2000);
     }

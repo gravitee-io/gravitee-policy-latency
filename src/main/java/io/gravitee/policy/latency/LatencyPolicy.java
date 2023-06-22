@@ -15,38 +15,41 @@
  */
 package io.gravitee.policy.latency;
 
-import io.gravitee.gateway.api.ExecutionContext;
-import io.gravitee.gateway.api.Request;
-import io.gravitee.gateway.api.Response;
-import io.gravitee.policy.api.PolicyChain;
-import io.gravitee.policy.api.annotations.OnRequest;
+import io.gravitee.gateway.reactive.api.context.HttpExecutionContext;
+import io.gravitee.gateway.reactive.api.context.MessageExecutionContext;
+import io.gravitee.gateway.reactive.api.policy.Policy;
 import io.gravitee.policy.latency.configuration.LatencyPolicyConfiguration;
-import io.vertx.core.Vertx;
+import io.gravitee.policy.latency.v3.LatencyPolicyV3;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Maybe;
 
 /**
- * @author Azize ELAMRANI (azize.elamrani at graviteesource.com)
+ * @author Guillaume Lamirand (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-public class LatencyPolicy {
-
-    private final LatencyPolicyConfiguration latencyPolicyConfiguration;
+public class LatencyPolicy extends LatencyPolicyV3 implements Policy {
 
     public LatencyPolicy(final LatencyPolicyConfiguration latencyPolicyConfiguration) {
-        this.latencyPolicyConfiguration = latencyPolicyConfiguration;
+        super(latencyPolicyConfiguration);
     }
 
-    @OnRequest
-    public void onRequest(
-        final Request request,
-        final Response response,
-        final ExecutionContext executionContext,
-        final PolicyChain policyChain
-    ) {
-        executionContext
-            .getComponent(Vertx.class)
-            .setTimer(
-                latencyPolicyConfiguration.getTimeUnit().toMillis(latencyPolicyConfiguration.getTime()),
-                timerId -> policyChain.doNext(request, response)
-            );
+    @Override
+    public String id() {
+        return "latency";
+    }
+
+    @Override
+    public Completable onRequest(final HttpExecutionContext ctx) {
+        return Completable.complete().delay(configuration.getTime(), configuration.getTimeUnit());
+    }
+
+    @Override
+    public Completable onMessageRequest(final MessageExecutionContext ctx) {
+        return ctx.request().onMessage(message -> Maybe.just(message).delay(configuration.getTime(), configuration.getTimeUnit()));
+    }
+
+    @Override
+    public Completable onMessageResponse(final MessageExecutionContext ctx) {
+        return ctx.response().onMessage(message -> Maybe.just(message).delay(configuration.getTime(), configuration.getTimeUnit()));
     }
 }
