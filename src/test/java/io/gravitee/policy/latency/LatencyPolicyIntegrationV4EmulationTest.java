@@ -15,27 +15,12 @@
  */
 package io.gravitee.policy.latency;
 
-import io.gravitee.apim.gateway.tests.sdk.annotations.DeployApi;
 import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
-import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayConfigurationBuilder;
-import io.gravitee.definition.model.Api;
-import io.gravitee.definition.model.ExecutionMode;
+import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayMode;
 
 /**
  * @author Guillaume Lamirand (guillaume.lamirand at graviteesource.com)
  * @author GraviteeSource Team
  */
-class LatencyPolicyIntegrationV4CompatibilityTest extends LatencyPolicyIntegrationV3Test {
-
-    @Override
-    protected void configureGateway(GatewayConfigurationBuilder gatewayConfigurationBuilder) {
-        super.configureGateway(gatewayConfigurationBuilder);
-        gatewayConfigurationBuilder.set("api.jupiterMode.enabled", "true");
-    }
-
-    @Override
-    public void configureApi(Api api) {
-        super.configureApi(api);
-        api.setExecutionMode(ExecutionMode.JUPITER);
-    }
-}
+@GatewayTest
+class LatencyPolicyIntegrationV4EmulationTest extends LatencyPolicyIntegrationV3Test {}
