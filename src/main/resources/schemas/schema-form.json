@@ -1,18 +1,19 @@
 {
-  "type" : "object",
-  "id" : "urn:jsonschema:io:gravitee:policy:latency:configuration:LatencyPolicyConfiguration",
-  "properties" : {
-    "time" : {
-      "title": "Time duration",
-      "type" : "integer",
-      "default": 100,
-      "minimum": 0
-    },
-    "timeUnit" : {
-      "title": "Time unit",
-      "type" : "string",
-      "default": "MILLISECONDS",
-      "enum" : [ "MILLISECONDS", "SECONDS" ]
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "time": {
+            "title": "Time duration",
+            "type": "integer",
+            "default": 100,
+            "minimum": 0
+        },
+        "timeUnit": {
+            "title": "Time unit",
+            "type": "string",
+            "default": "MILLISECONDS",
+            "enum": ["MILLISECONDS", "SECONDS"]
+        }
     }
-  }
 }
