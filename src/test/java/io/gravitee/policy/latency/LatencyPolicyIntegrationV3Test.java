@@ -26,6 +26,7 @@ import io.gravitee.apim.gateway.tests.sdk.AbstractPolicyTest;
 import io.gravitee.apim.gateway.tests.sdk.annotations.DeployApi;
 import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
 import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayConfigurationBuilder;
+import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayMode;
 import io.gravitee.apim.gateway.tests.sdk.reporter.FakeReporter;
 import io.gravitee.definition.model.Api;
 import io.gravitee.definition.model.ExecutionMode;
@@ -47,21 +48,9 @@ import org.junit.jupiter.api.Test;
  * @author Yann TAVERNIER (yann.tavernier at graviteesource.com)
  * @author GraviteeSource Team
  */
-@GatewayTest
+@GatewayTest(v2ExecutionMode = ExecutionMode.V3)
 @DeployApi("/apis/latency-v2.json")
 class LatencyPolicyIntegrationV3Test extends AbstractPolicyTest<LatencyPolicy, LatencyPolicyConfiguration> {
-
-    @Override
-    protected void configureGateway(GatewayConfigurationBuilder gatewayConfigurationBuilder) {
-        super.configureGateway(gatewayConfigurationBuilder);
-        gatewayConfigurationBuilder.set("api.jupiterMode.enabled", "false");
-    }
-
-    @Override
-    public void configureApi(Api api) {
-        super.configureApi(api);
-        api.setExecutionMode(ExecutionMode.V3);
-    }
 
     @Test
     void should_apply_latency_on_request(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
