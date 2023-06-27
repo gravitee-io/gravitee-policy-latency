@@ -1,3 +1,10 @@
+# [2.0.0-alpha.2](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.1...2.0.0-alpha.2) (2023-06-27)
+
+
+### Features
+
+* clean and validate json schema for v4 ([23ea199](https://github.com/gravitee-io/gravitee-policy-latency/commit/23ea1995f46298b68b6baa15f45e340952306a90))
+
 # [2.0.0-alpha.1](https://github.com/gravitee-io/gravitee-policy-latency/compare/1.4.1...2.0.0-alpha.1) (2023-06-22)
 
 
