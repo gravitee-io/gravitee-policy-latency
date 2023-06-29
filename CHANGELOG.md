@@ -1,3 +1,10 @@
+# [2.0.0-alpha.3](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.2...2.0.0-alpha.3) (2023-06-29)
+
+
+### Bug Fixes
+
+* use new execution mode V4 Emulation ([daa50ce](https://github.com/gravitee-io/gravitee-policy-latency/commit/daa50ce2bf48449136881774077f95b86539b5b3))
+
 # [2.0.0-alpha.2](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.1...2.0.0-alpha.2) (2023-06-27)
 
 
