@@ -1,3 +1,10 @@
+# [2.0.0-alpha.4](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.3...2.0.0-alpha.4) (2023-06-29)
+
+
+### Bug Fixes
+
+* use latest reactor alpha version ([ba71aa5](https://github.com/gravitee-io/gravitee-policy-latency/commit/ba71aa5a2dfaaf043758b79d09bc340c19d34fbd))
+
 # [2.0.0-alpha.3](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.2...2.0.0-alpha.3) (2023-06-29)
 
 
