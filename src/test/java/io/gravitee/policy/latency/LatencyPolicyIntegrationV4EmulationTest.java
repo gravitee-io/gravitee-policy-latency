@@ -16,7 +16,6 @@
 package io.gravitee.policy.latency;
 
 import io.gravitee.apim.gateway.tests.sdk.annotations.GatewayTest;
-import io.gravitee.apim.gateway.tests.sdk.configuration.GatewayMode;
 
 /**
  * @author Guillaume Lamirand (guillaume.lamirand at graviteesource.com)
