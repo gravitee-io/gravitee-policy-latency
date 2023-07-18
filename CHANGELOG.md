@@ -1,3 +1,15 @@
+# [2.0.0-alpha.5](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.4...2.0.0-alpha.5) (2023-07-18)
+
+
+### chore
+
+* **deps:** update gravitee-parent ([be6cd89](https://github.com/gravitee-io/gravitee-policy-latency/commit/be6cd89067fc0ca3a599072a8f79a2ad4b6c62fe))
+
+
+### BREAKING CHANGES
+
+* **deps:** require Java17
+
 # [2.0.0-alpha.4](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0-alpha.3...2.0.0-alpha.4) (2023-06-29)
 
 
