@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.0...2.0.1) (2023-07-20)
+
+
+### Bug Fixes
+
+* update policy description ([64d8048](https://github.com/gravitee-io/gravitee-policy-latency/commit/64d80489e8a2e4a01e61acf21614aa27be8779eb))
+
 # [2.0.0](https://github.com/gravitee-io/gravitee-policy-latency/compare/1.4.1...2.0.0) (2023-07-18)
 
 
