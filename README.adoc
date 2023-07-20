@@ -12,9 +12,9 @@ endif::[]
 |===
 |Plugin version | APIM version
 
-| 2.x and upper       | 4.x and upper
-| 1.4.x               | 3.10.x and upper
-| Up to 1.3.x         | Up to 3.9.x
+| Up to 1.3.x   | Up to 3.9.x
+| 1.4.x         | Up to 3.20
+| 2.x           | 4.x to latest
 |===
 
 === V3 engine
@@ -55,6 +55,8 @@ This policy is particularly useful in two scenarios:
 
 * Testing: adding latency allows you to test client applications when APIs are slow to respond.
 * Monetization: a longer latency can be added to free plans to encourage clients to move to a better (or paid) plan.
+
+|===
 
 == Configuration
 
