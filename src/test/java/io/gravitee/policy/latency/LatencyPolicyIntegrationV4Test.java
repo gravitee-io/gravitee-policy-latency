@@ -131,7 +131,7 @@ class LatencyPolicyIntegrationV4Test extends AbstractPolicyTest<LatencyPolicy, L
     @Test
     @DeployApi("/apis/latency-v4-message-publish.json")
     void should_apply_latency_on_request_message(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
-        prepareReporter(vertxTestContext, 3);
+        prepareReporter(vertxTestContext, 4);
         Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
         httpClient
             .rxRequest(POST, "/test")
@@ -157,7 +157,7 @@ class LatencyPolicyIntegrationV4Test extends AbstractPolicyTest<LatencyPolicy, L
     @Test
     @DeployApi("/apis/latency-v4-message-subscribe.json")
     void should_apply_latency_on_response_message(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
-        prepareReporter(vertxTestContext, 3);
+        prepareReporter(vertxTestContext, 4);
         Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
         httpClient
             .rxRequest(HttpMethod.GET, "/test")
