@@ -129,6 +129,38 @@ class LatencyPolicyIntegrationV4Test extends AbstractPolicyTest<LatencyPolicy, L
     }
 
     @Test
+    @DeployApi("/apis/latency-v4-proxy-response.json")
+    void should_apply_latency_on_proxy_response(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
+        prepareReporter(vertxTestContext, 1);
+        Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
+        wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
+
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test")
+            .flatMap(HttpClientRequest::rxSend)
+            .flatMap(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver
+            .assertComplete()
+            .assertValue(body -> {
+                responseCheckpoint.flag();
+                assertThat(body).hasToString("I'm the backend");
+                return true;
+            });
+
+        wiremock.verify(exactly(1), getRequestedFor(urlPathEqualTo("/endpoint")));
+
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
+        Metrics metrics = metricsRef.get();
+        assertThat(metrics).isNotNull();
+        assertThat(metrics.getGatewayResponseTimeMs()).isGreaterThan(2000);
+    }
+
+    @Test
     @DeployApi("/apis/latency-v4-message-publish.json")
     void should_apply_latency_on_request_message(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
         prepareReporter(vertxTestContext, 4);

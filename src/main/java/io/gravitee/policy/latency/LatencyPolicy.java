@@ -40,7 +40,12 @@ public class LatencyPolicy extends LatencyPolicyV3 implements Policy {
 
     @Override
     public Completable onRequest(final HttpExecutionContext ctx) {
-        return Completable.complete().delay(configuration.getTime(), configuration.getTimeUnit());
+        return delay();
+    }
+
+    @Override
+    public Completable onResponse(final HttpExecutionContext ctx) {
+        return delay();
     }
 
     @Override
@@ -51,5 +56,9 @@ public class LatencyPolicy extends LatencyPolicyV3 implements Policy {
     @Override
     public Completable onMessageResponse(final MessageExecutionContext ctx) {
         return ctx.response().onMessage(message -> Maybe.just(message).delay(configuration.getTime(), configuration.getTimeUnit()));
+    }
+
+    private Completable delay() {
+        return Completable.complete().delay(configuration.getTime(), configuration.getTimeUnit());
     }
 }
