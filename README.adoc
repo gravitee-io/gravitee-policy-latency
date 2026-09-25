@@ -28,7 +28,7 @@ endif::[]
 ^|onResponseContent
 
 ^.^| X
-^.^|
+^.^| X
 ^.^|
 ^.^|
 |===
@@ -43,7 +43,7 @@ endif::[]
 ^|onMessageResponse
 
 ^.^| X
-^.^|
+^.^| X
 ^.^| X
 ^.^| X
 |===

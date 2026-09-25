@@ -82,4 +82,40 @@ class LatencyPolicyIntegrationV3Test extends AbstractPolicyTest<LatencyPolicy, L
         wiremock.verify(exactly(1), getRequestedFor(urlPathEqualTo("/endpoint")));
         assertThat(metricsRef.get().getProxyResponseTimeMs()).isGreaterThan(2000);
     }
+
+    @Test
+    @DeployApi("/apis/latency-v2-response.json")
+    void should_apply_latency_on_response(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
+        Checkpoint fakeReporterCheckpoint = vertxTestContext.checkpoint();
+        FakeReporter fakeReporter = getBean(FakeReporter.class);
+        AtomicReference<Metrics> metricsRef = new AtomicReference<>();
+        fakeReporter.setReportableHandler(reportable -> {
+            fakeReporterCheckpoint.flag();
+            metricsRef.set((Metrics) reportable);
+        });
+
+        wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
+
+        Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test-response")
+            .flatMap(HttpClientRequest::rxSend)
+            .flatMap(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver
+            .assertComplete()
+            .assertValue(body -> {
+                responseCheckpoint.flag();
+                assertThat(body).hasToString("I'm the backend");
+                return true;
+            });
+
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
+        wiremock.verify(exactly(1), getRequestedFor(urlPathEqualTo("/endpoint")));
+        assertThat(metricsRef.get().getProxyResponseTimeMs()).isGreaterThan(2000);
+    }
 }
