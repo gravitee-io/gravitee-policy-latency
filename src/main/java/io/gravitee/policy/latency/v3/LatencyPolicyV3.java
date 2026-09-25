@@ -20,6 +20,7 @@ import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
 import io.gravitee.policy.api.PolicyChain;
 import io.gravitee.policy.api.annotations.OnRequest;
+import io.gravitee.policy.api.annotations.OnResponse;
 import io.gravitee.policy.latency.configuration.LatencyPolicyConfiguration;
 import io.vertx.core.Vertx;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,25 @@ public class LatencyPolicyV3 {
 
     @OnRequest
     public void onRequest(
+        final Request request,
+        final Response response,
+        final ExecutionContext executionContext,
+        final PolicyChain policyChain
+    ) {
+        delay(request, response, executionContext, policyChain);
+    }
+
+    @OnResponse
+    public void onResponse(
+        final Request request,
+        final Response response,
+        final ExecutionContext executionContext,
+        final PolicyChain policyChain
+    ) {
+        delay(request, response, executionContext, policyChain);
+    }
+
+    private void delay(
         final Request request,
         final Response response,
         final ExecutionContext executionContext,
