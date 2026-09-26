@@ -161,6 +161,89 @@ class LatencyPolicyIntegrationV4Test extends AbstractPolicyTest<LatencyPolicy, L
     }
 
     @Test
+    @DeployApi("/apis/latency-v4-proxy-el.json")
+    void should_apply_latency_from_expression(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
+        prepareReporter(vertxTestContext, 1);
+        Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
+        wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
+
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test")
+            .flatMap(request -> request.putHeader("X-Latency", "2").rxSend())
+            .flatMap(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver
+            .assertComplete()
+            .assertValue(body -> {
+                responseCheckpoint.flag();
+                assertThat(body).hasToString("I'm the backend");
+                return true;
+            });
+
+        wiremock.verify(exactly(1), getRequestedFor(urlPathEqualTo("/endpoint")));
+
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
+        Metrics metrics = metricsRef.get();
+        assertThat(metrics).isNotNull();
+        assertThat(metrics.getGatewayResponseTimeMs()).isGreaterThan(2000);
+    }
+
+    @Test
+    @DeployApi("/apis/latency-v4-proxy-el.json")
+    void should_fail_when_expression_is_not_a_number(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
+        prepareReporter(vertxTestContext, 1);
+        wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
+
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test")
+            .flatMap(request -> request.putHeader("X-Latency", "not-a-number").rxSend())
+            .flatMap(response -> {
+                assertThat(response.statusCode()).isEqualTo(500);
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver.assertComplete().assertValue(body -> body.toString().contains("Invalid latency time"));
+
+        wiremock.verify(exactly(0), getRequestedFor(urlPathEqualTo("/endpoint")));
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
+        assertThat(metricsRef.get().getErrorKey()).isEqualTo("LATENCY_INVALID_TIME");
+    }
+
+    @Test
+    @DeployApi("/apis/latency-v4-message-subscribe-el.json")
+    void should_apply_latency_on_response_message_from_expression(HttpClient httpClient, VertxTestContext vertxTestContext)
+        throws InterruptedException {
+        prepareReporter(vertxTestContext, 4);
+        Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
+        httpClient
+            .rxRequest(HttpMethod.GET, "/test")
+            .flatMap(request -> {
+                request.putHeader(HttpHeaderNames.ACCEPT.toString(), MediaType.TEXT_EVENT_STREAM);
+                return request.rxSend();
+            })
+            .flatMapPublisher(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.toFlowable();
+            })
+            .filter(buffer -> !buffer.toString().startsWith("retry:") && !buffer.toString().startsWith(":"))
+            .test()
+            .awaitCount(1)
+            .assertValue(body -> {
+                responseCheckpoint.flag();
+                return true;
+            });
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
+        MessageMetrics messageMetrics = messageMetricsRef.get();
+        assertThat(messageMetrics).isNotNull();
+        assertThat(messageMetrics.getGatewayLatencyMs()).isGreaterThan(2000);
+    }
+
+    @Test
     @DeployApi("/apis/latency-v4-message-publish.json")
     void should_apply_latency_on_request_message(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
         prepareReporter(vertxTestContext, 4);

@@ -1,0 +1,68 @@
+{
+    "id": "my-message-subscribe-el-api",
+    "name": "my-message-subscribe-el-api",
+    "apiVersion": "1.0",
+    "definitionVersion": "4.0.0",
+    "type": "message",
+    "listeners": [
+        {
+            "type": "http",
+            "paths": [
+                {
+                    "path": "/test"
+                }
+            ],
+            "entrypoints": [
+                {
+                    "type": "sse",
+                    "configuration": {
+                        "headersAsComment": true
+                    }
+                }
+            ]
+        }
+    ],
+    "endpointGroups": [
+        {
+            "name": "default-group",
+            "type": "mock",
+            "endpoints": [
+                {
+                    "name": "default",
+                    "type": "mock",
+                    "weight": 1,
+                    "inheritConfiguration": false,
+                    "configuration": {
+                        "messageContent": "{ \"message\": \"hello\" }",
+                        "messageCount": 1
+                    }
+                }
+            ]
+        }
+    ],
+    "flows": [
+        {
+            "name": "flow-1",
+            "enabled": true,
+            "subscribe": [
+                {
+                    "name": "Latency policy",
+                    "description": "",
+                    "enabled": true,
+                    "policy": "latency",
+                    "configuration": {
+                        "time": 0,
+                        "dynamicTime": "{#message.content.length() > 0 ? 2 : 0}",
+                        "timeUnit": "SECONDS"
+                    }
+                }
+            ],
+            "request": [],
+            "response": [],
+            "publish": []
+        }
+    ],
+    "analytics": {
+        "enabled ": true
+    }
+}

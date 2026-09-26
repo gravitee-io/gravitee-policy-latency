@@ -84,6 +84,61 @@ class LatencyPolicyIntegrationV3Test extends AbstractPolicyTest<LatencyPolicy, L
     }
 
     @Test
+    @DeployApi("/apis/latency-v2-el.json")
+    void should_apply_latency_from_expression(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
+        Checkpoint fakeReporterCheckpoint = vertxTestContext.checkpoint();
+        FakeReporter fakeReporter = getBean(FakeReporter.class);
+        AtomicReference<Metrics> metricsRef = new AtomicReference<>();
+        fakeReporter.setReportableHandler(reportable -> {
+            fakeReporterCheckpoint.flag();
+            metricsRef.set((Metrics) reportable);
+        });
+
+        wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
+
+        Checkpoint responseCheckpoint = vertxTestContext.checkpoint();
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test-el")
+            .flatMap(request -> request.putHeader("X-Latency", "2").rxSend())
+            .flatMap(response -> {
+                assertThat(response.statusCode()).isEqualTo(200);
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver
+            .assertComplete()
+            .assertValue(body -> {
+                responseCheckpoint.flag();
+                assertThat(body).hasToString("I'm the backend");
+                return true;
+            });
+
+        assertThat(vertxTestContext.awaitCompletion(30, TimeUnit.SECONDS)).isTrue();
+        wiremock.verify(exactly(1), getRequestedFor(urlPathEqualTo("/endpoint")));
+        assertThat(metricsRef.get().getProxyResponseTimeMs()).isGreaterThan(2000);
+    }
+
+    @Test
+    @DeployApi("/apis/latency-v2-el.json")
+    void should_fail_when_expression_is_not_a_number(HttpClient httpClient) throws InterruptedException {
+        wiremock.stubFor(get("/endpoint").willReturn(ok("I'm the backend")));
+
+        TestObserver<Buffer> testObserver = httpClient
+            .request(HttpMethod.GET, "/test-el")
+            .flatMap(request -> request.putHeader("X-Latency", "not-a-number").rxSend())
+            .flatMap(response -> {
+                assertThat(response.statusCode()).isEqualTo(500);
+                return response.rxBody();
+            })
+            .test();
+        awaitTerminalEvent(testObserver);
+        testObserver.assertComplete().assertValue(body -> body.toString().contains("Invalid latency time"));
+
+        wiremock.verify(exactly(0), getRequestedFor(urlPathEqualTo("/endpoint")));
+    }
+
+    @Test
     @DeployApi("/apis/latency-v2-response.json")
     void should_apply_latency_on_response(HttpClient httpClient, VertxTestContext vertxTestContext) throws InterruptedException {
         Checkpoint fakeReporterCheckpoint = vertxTestContext.checkpoint();
