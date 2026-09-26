@@ -35,5 +35,6 @@ import lombok.Setter;
 public class LatencyPolicyConfiguration implements PolicyConfiguration {
 
     private long time;
+    private String dynamicTime;
     private TimeUnit timeUnit;
 }
