@@ -28,7 +28,7 @@ endif::[]
 ^|onResponseContent
 
 ^.^| X
-^.^|
+^.^| X
 ^.^|
 ^.^|
 |===
@@ -43,7 +43,7 @@ endif::[]
 ^|onMessageResponse
 
 ^.^| X
-^.^|
+^.^| X
 ^.^| X
 ^.^| X
 |===
@@ -68,9 +68,15 @@ You can configure the policy with the following options:
 
 .^|time
 ^.^|
-|Time to wait (`ms`)
+|Time to wait, expressed in `timeUnit`.
 ^.^|integer
 ^.^|`100`
+
+.^|dynamicTime
+^.^|
+|EL expression returning the time to wait, expressed in `timeUnit`. When set, it overrides `time`.
+^.^|string (EL)
+^.^|
 
 .^|timeUnit
 ^.^|
@@ -79,6 +85,20 @@ You can configure the policy with the following options:
 ^.^|`"MILLISECONDS"`
 
 |===
+
+=== Example
+
+The following configuration reads the latency, in seconds, from the `X-Latency` request header:
+
+[source, json]
+----
+{
+    "dynamicTime": "{#request.headers['X-Latency'][0]}",
+    "timeUnit": "SECONDS"
+}
+----
+
+For message APIs, the expression is evaluated for each message, so `{#message...}` can be used.
 
 == Errors
 
@@ -89,5 +109,15 @@ You can configure the policy with the following options:
 
 .^| ```500```
 | Server error
+
+|===
+
+=== Default response override
+
+|===
+|Key |Description
+
+.^|LATENCY_INVALID_TIME
+|The `dynamicTime` expression does not resolve to a number greater than or equal to 0.
 
 |===

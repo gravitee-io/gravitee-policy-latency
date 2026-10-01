@@ -15,13 +15,23 @@
  */
 package io.gravitee.policy.latency;
 
+import static io.gravitee.policy.latency.configuration.LatencyTimeResolver.INVALID_TIME_KEY;
+import static io.gravitee.policy.latency.configuration.LatencyTimeResolver.INVALID_TIME_MESSAGE;
+
+import io.gravitee.common.http.HttpStatusCode;
+import io.gravitee.el.TemplateEngine;
+import io.gravitee.gateway.reactive.api.ExecutionFailure;
 import io.gravitee.gateway.reactive.api.context.HttpExecutionContext;
 import io.gravitee.gateway.reactive.api.context.MessageExecutionContext;
+import io.gravitee.gateway.reactive.api.message.Message;
 import io.gravitee.gateway.reactive.api.policy.Policy;
 import io.gravitee.policy.latency.configuration.LatencyPolicyConfiguration;
+import io.gravitee.policy.latency.configuration.LatencyTimeResolver;
+import io.gravitee.policy.latency.configuration.LatencyTimeResolver.InvalidLatencyTimeException;
 import io.gravitee.policy.latency.v3.LatencyPolicyV3;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 
 /**
  * @author Guillaume Lamirand (guillaume.lamirand at graviteesource.com)
@@ -40,16 +50,51 @@ public class LatencyPolicy extends LatencyPolicyV3 implements Policy {
 
     @Override
     public Completable onRequest(final HttpExecutionContext ctx) {
-        return Completable.complete().delay(configuration.getTime(), configuration.getTimeUnit());
+        return delay(ctx);
+    }
+
+    @Override
+    public Completable onResponse(final HttpExecutionContext ctx) {
+        return delay(ctx);
     }
 
     @Override
     public Completable onMessageRequest(final MessageExecutionContext ctx) {
-        return ctx.request().onMessage(message -> Maybe.just(message).delay(configuration.getTime(), configuration.getTimeUnit()));
+        return ctx.request().onMessage(message -> delay(ctx, message));
     }
 
     @Override
     public Completable onMessageResponse(final MessageExecutionContext ctx) {
-        return ctx.response().onMessage(message -> Maybe.just(message).delay(configuration.getTime(), configuration.getTimeUnit()));
+        return ctx.response().onMessage(message -> delay(ctx, message));
+    }
+
+    private Completable delay(final HttpExecutionContext ctx) {
+        return resolveTime(ctx.getTemplateEngine())
+            .flatMapCompletable(time -> Completable.complete().delay(time, configuration.getTimeUnit()))
+            .onErrorResumeNext(throwable -> {
+                if (throwable instanceof InvalidLatencyTimeException) {
+                    return ctx.interruptWith(invalidTimeFailure());
+                }
+                return Completable.error(throwable);
+            });
+    }
+
+    private Maybe<Message> delay(final MessageExecutionContext ctx, final Message message) {
+        return resolveTime(ctx.getTemplateEngine(message))
+            .flatMapMaybe(time -> Maybe.just(message).delay(time, configuration.getTimeUnit()))
+            .onErrorResumeNext(throwable -> {
+                if (throwable instanceof InvalidLatencyTimeException) {
+                    return ctx.interruptMessageWith(invalidTimeFailure());
+                }
+                return Maybe.error(throwable);
+            });
+    }
+
+    private Single<Long> resolveTime(final TemplateEngine templateEngine) {
+        return LatencyTimeResolver.resolve(configuration, templateEngine);
+    }
+
+    private static ExecutionFailure invalidTimeFailure() {
+        return new ExecutionFailure(HttpStatusCode.INTERNAL_SERVER_ERROR_500).key(INVALID_TIME_KEY).message(INVALID_TIME_MESSAGE);
     }
 }

@@ -9,6 +9,14 @@
             "default": 100,
             "minimum": 0
         },
+        "dynamicTime": {
+            "title": "Dynamic time duration",
+            "description": "EL expression returning the time duration (e.g. {#request.headers['X-Latency'][0]}). When set, it overrides 'Time duration'.",
+            "type": "string",
+            "x-schema-form": {
+                "expression-language": true
+            }
+        },
         "timeUnit": {
             "title": "Time unit",
             "type": "string",
