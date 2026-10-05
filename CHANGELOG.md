@@ -1,3 +1,11 @@
+# [3.1.0](https://github.com/gravitee-io/gravitee-policy-latency/compare/3.0.0...3.1.0) (2026-10-05)
+
+
+### Features
+
+* support EL with a new dynamicTime field ([f37da09](https://github.com/gravitee-io/gravitee-policy-latency/commit/f37da092c34ca63e93414e5075ddabcdd66adb50))
+* support RESPONSE phase ([068c24d](https://github.com/gravitee-io/gravitee-policy-latency/commit/068c24da123b9a1a18de127e3abe50e21c518688))
+
 # [3.0.0](https://github.com/gravitee-io/gravitee-policy-latency/compare/2.0.1...3.0.0) (2026-09-24)
 
 
